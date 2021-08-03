@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.*
 import androidx.navigation.compose.*
 import dagger.hilt.android.*
+import ir.ah.pokedexappwithjetpackcompose.ui.screen.PokemonListScreen.*
 import ir.ah.pokedexappwithjetpackcompose.ui.theme.PokedexAppWithJetpackComposeTheme
 
 @AndroidEntryPoint
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
                     startDestination = "pokemon_list_screen"
                 ) {
                     composable("pokemon_list_screen") {
+                        PokemonListScreen(navController = navController)
                     }
                     composable(
                         "pokemon_detail_screen/{dominantColor}/{pokemonName}",
@@ -63,6 +65,10 @@ fun Greeting(name: String) {
 @Composable
 fun DefaultPreview() {
     PokedexAppWithJetpackComposeTheme {
+        val navController = rememberNavController()
+
+                PokemonListScreen(navController = navController)
+
 
     }
 }
