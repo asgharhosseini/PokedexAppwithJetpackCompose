@@ -1,6 +1,6 @@
 package ir.ah.pokedexappwithjetpackcompose.data.response
 
 data class GenerationVi(
-    val omegaruby-alphasapphire: OmegarubyAlphasapphire,
-    val x-y: XY
+    val omegarubyAlphasapphire: OmegarubyAlphasapphire,
+    val xy: XY
 )
