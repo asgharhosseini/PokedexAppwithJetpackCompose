@@ -1,7 +1,13 @@
 package ir.ah.pokedexappwithjetpackcompose.data.response
 
+
+import com.google.gson.annotations.SerializedName
+
 data class Stat(
-    val base_stat: Int,
+    @SerializedName("base_stat")
+    val baseStat: Int,
+    @SerializedName("effort")
     val effort: Int,
+    @SerializedName("stat")
     val stat: StatX
 )

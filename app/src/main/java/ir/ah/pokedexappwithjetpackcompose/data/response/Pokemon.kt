@@ -1,22 +1,43 @@
 package ir.ah.pokedexappwithjetpackcompose.data.response
 
+
+import com.google.gson.annotations.SerializedName
+
 data class Pokemon(
+    @SerializedName("abilities")
     val abilities: List<Ability>,
-    val base_experience: Int,
+    @SerializedName("base_experience")
+    val baseExperience: Int,
+    @SerializedName("forms")
     val forms: List<Form>,
-    val game_indices: List<GameIndice>,
+    @SerializedName("game_indices")
+    val gameIndices: List<GameIndice>,
+    @SerializedName("height")
     val height: Int,
-    val held_items: List<Any>,
+    @SerializedName("held_items")
+    val heldItems: List<Any>,
+    @SerializedName("id")
     val id: Int,
-    val is_default: Boolean,
-    val location_area_encounters: String,
+    @SerializedName("is_default")
+    val isDefault: Boolean,
+    @SerializedName("location_area_encounters")
+    val locationAreaEncounters: String,
+    @SerializedName("moves")
     val moves: List<Move>,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("order")
     val order: Int,
-    val past_types: List<Any>,
+    @SerializedName("past_types")
+    val pastTypes: List<Any>,
+    @SerializedName("species")
     val species: Species,
+    @SerializedName("sprites")
     val sprites: Sprites,
+    @SerializedName("stats")
     val stats: List<Stat>,
+    @SerializedName("types")
     val types: List<Type>,
+    @SerializedName("weight")
     val weight: Int
 )

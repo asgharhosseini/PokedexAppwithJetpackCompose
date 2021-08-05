@@ -1,31 +1,46 @@
 package ir.ah.pokedexappwithjetpackcompose.ui.screen.pokemondetail
 
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
-import androidx.compose.ui.*
-import androidx.compose.ui.draw.*
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.CenterHorizontally
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusState
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.*
-import androidx.compose.ui.platform.*
-import androidx.compose.ui.res.*
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.*
-import androidx.compose.ui.text.style.*
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.*
-import androidx.navigation.*
-import coil.request.*
+import androidx.navigation.NavController
+
+import coil.request.ImageRequest
 import com.google.accompanist.coil.*
 import ir.ah.pokedexappwithjetpackcompose.R
 import ir.ah.pokedexappwithjetpackcompose.data.response.*
 import ir.ah.pokedexappwithjetpackcompose.util.*
-import java.lang.Math.*
 import java.util.*
-
+import kotlin.math.*
 
 @Composable
 fun PokemonDetailScreen(
@@ -44,7 +59,7 @@ fun PokemonDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(dominantColor)
-            //.padding(16.dp)
+        //.padding(16.dp)
     ) {
         PokemonDetailTopSection(
             navController = navController,
@@ -89,7 +104,7 @@ fun PokemonDetailScreen(
                     Image(
                         painter = rememberCoilPainter(
                             request = ImageRequest.Builder(LocalContext.current)
-                                .data(it.front_default)
+                                .data(it.backDefault)
                                 .build()
                         ),
                         contentDescription = pokemonInfo.data.name,
@@ -196,6 +211,7 @@ fun PokemonDetailSection(
             pokemonWeight = pokemonInfo.weight,
             pokemonHeight = pokemonInfo.height
         )
+        PokemonBaseStats(pokemonInfo = pokemonInfo)
 
     }
 
@@ -237,7 +253,7 @@ fun PokemonDetailDataSection(
     pokemonWeight: Int,
     pokemonHeight: Int,
     sectionHeight: Dp = 80.dp
-){
+) {
     val pokemonWeightInKg = remember {
         round(pokemonWeight * 100f) / 1000f
     }
@@ -245,26 +261,28 @@ fun PokemonDetailDataSection(
         round(pokemonHeight * 100f) / 1000f
     }
 
-   Row (
-       modifier = Modifier.fillMaxWidth()
-           ){
-       PokemonDetailDataItem(
-           dataValue = pokemonWeightInKg,
-           dataUnit = "kg",
-           dataIcon = painterResource(id = R.drawable.ic_weight),
-           modifier = Modifier.weight(1f)
-       )
-       Spacer(modifier = Modifier
-           .size(1.dp, sectionHeight)
-           .background(Color.LightGray))
-       PokemonDetailDataItem(
-           dataValue = pokemonHeightInMeters,
-           dataUnit = "m",
-           dataIcon = painterResource(id = R.drawable.ic_height),
-           modifier = Modifier.weight(1f)
-       )
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        PokemonDetailDataItem(
+            dataValue = pokemonWeightInKg,
+            dataUnit = "kg",
+            dataIcon = painterResource(id = R.drawable.ic_weight),
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(
+            modifier = Modifier
+                .size(1.dp, sectionHeight)
+                .background(Color.LightGray)
+        )
+        PokemonDetailDataItem(
+            dataValue = pokemonHeightInMeters,
+            dataUnit = "m",
+            dataIcon = painterResource(id = R.drawable.ic_height),
+            modifier = Modifier.weight(1f)
+        )
 
-   }
+    }
 }
 
 @Composable
@@ -273,7 +291,7 @@ fun PokemonDetailDataItem(
     dataUnit: String,
     dataIcon: Painter,
     modifier: Modifier = Modifier
-){
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -289,8 +307,97 @@ fun PokemonDetailDataItem(
 }
 
 
+@Composable
+fun PokemonBaseStats(
+    pokemonInfo: Pokemon,
+    animDelayPerItem: Int = 100
+) {
+    val maxBaseStat = remember {
+        pokemonInfo.stats.maxOf { it.baseStat }
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Base stats:",
+            fontSize = 20.sp,
+            color = MaterialTheme.colors.onSurface
+        )
+        Spacer(modifier = Modifier.height(4.dp))
 
+        for(i in pokemonInfo.stats.indices) {
+            val stat = pokemonInfo.stats[i]
+            PokemonStat(
+                statName = parseStatToAbbr(stat),
+                statValue = stat.baseStat,
+                statMaxValue = maxBaseStat,
+                statColor = parseStatToColor(stat),
+                animDelay = i * animDelayPerItem
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
 
+@Composable
+fun PokemonStat(
+    statName: String,
+    statValue: Int,
+    statMaxValue: Int,
+    statColor: Color,
+    height: Dp = 28.dp,
+    animDuration: Int = 1000,
+    animDelay: Int = 0
+) {
+    var animationPlayed by remember {
+        mutableStateOf(false)
+    }
+    val curPercent = animateFloatAsState(
+        targetValue = if(animationPlayed) {
+            statValue / statMaxValue.toFloat()
+        } else 0f,
+        animationSpec = tween(
+            animDuration,
+            animDelay
+        )
+    )
+    LaunchedEffect(key1 = true) {
+        animationPlayed = true
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(CircleShape)
+            .background(
+                if (isSystemInDarkTheme()) {
+                    Color(0xFF505050)
+                } else {
+                    Color.LightGray
+                }
+            )
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(curPercent.value)
+                .clip(CircleShape)
+                .background(statColor)
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(
+                text = statName,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = (curPercent.value * statMaxValue).toInt().toString(),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
 
 
 
