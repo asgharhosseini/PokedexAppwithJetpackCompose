@@ -13,6 +13,7 @@ import ir.ah.pokedexappwithjetpackcompose.repository.*
 import ir.ah.pokedexappwithjetpackcompose.util.*
 import ir.ah.pokedexappwithjetpackcompose.util.Constants.PAGE_SIZE
 import kotlinx.coroutines.*
+import java.time.temporal.*
 import java.util.*
 import javax.inject.*
 
@@ -25,6 +26,12 @@ class PokemonListViewModel @Inject constructor(private val repository: PokemonRe
     var loadError = mutableStateOf("")
     var isLoading = mutableStateOf(false)
     var endReached = mutableStateOf(false)
+
+
+    private var cachedPokemonList = listOf<PokedexListEntry>()
+    private var isSearchStarting = true
+    var isSearching = mutableStateOf(false)
+
 
     init {
         loadPokemonPaginated()
@@ -79,4 +86,33 @@ class PokemonListViewModel @Inject constructor(private val repository: PokemonRe
     }
 
 
+    fun searchPokemonList(query: String){
+        val listToSearch = if(isSearchStarting) {
+            pokemonList.value
+        } else {
+            cachedPokemonList
+        }
+        viewModelScope.launch(Dispatchers.Default) {
+            if (query.isEmpty()){
+                pokemonList.value=cachedPokemonList
+                isSearching.value=false
+                isSearchStarting=true
+                return@launch
+            }
+            val result=listToSearch.filter {
+                it.pokemonName.contains(query.trim(),ignoreCase = true)||
+                        it.number.toString() ==query.trim()
+            }
+            if (isSearchStarting){
+                cachedPokemonList=pokemonList.value
+                isSearching.value=true
+            }
+            pokemonList.value = result
+            isSearching.value = true
+
+        }
+
+
+
+    }
 }
