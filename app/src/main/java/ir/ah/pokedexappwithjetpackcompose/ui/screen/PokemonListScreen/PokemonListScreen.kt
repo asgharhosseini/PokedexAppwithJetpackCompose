@@ -189,7 +189,7 @@ fun PokedexEntry(
 @Composable
 fun PokemonList(
     navController: NavController,
-    viewModel: PokemonListViewModel = hiltNavGraphViewModel()
+    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     val pokemonList by remember { viewModel.pokemonList }
     val endReached by remember { viewModel.endReached }
