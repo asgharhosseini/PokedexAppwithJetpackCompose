@@ -1,6 +1,11 @@
 package ir.ah.pokedexappwithjetpackcompose.data.response
 
+
+import com.google.gson.annotations.SerializedName
+
 data class IconsX(
-    val front_default: String,
-    val front_female: Any
+    @SerializedName("front_default")
+    val frontDefault: String,
+    @SerializedName("front_female")
+    val frontFemale: Any
 )

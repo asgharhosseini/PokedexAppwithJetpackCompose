@@ -1,7 +1,13 @@
 package ir.ah.pokedexappwithjetpackcompose.data.response
 
+
+import com.google.gson.annotations.SerializedName
+
 data class VersionGroupDetail(
-    val level_learned_at: Int,
-    val move_learn_method: MoveLearnMethod,
-    val version_group: VersionGroup
+    @SerializedName("level_learned_at")
+    val levelLearnedAt: Int,
+    @SerializedName("move_learn_method")
+    val moveLearnMethod: MoveLearnMethod,
+    @SerializedName("version_group")
+    val versionGroup: VersionGroup
 )
